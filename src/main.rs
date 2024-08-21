@@ -34,7 +34,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     'gameloop: loop {
         let mut cur_frame = frame::new_frame();
-        
+
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
