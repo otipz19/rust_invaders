@@ -7,7 +7,7 @@ use crate::frame::Drawable;
 pub struct Shot {
     pub x: usize,
     pub y: usize,
-    is_exploding: bool,
+    pub is_exploding: bool,
     timer: Timer,
 }
 
