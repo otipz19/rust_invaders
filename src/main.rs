@@ -1,4 +1,4 @@
-use std::{error::Error, io, sync::mpsc, thread, time::Duration};
+use std::{error::Error, io, sync::mpsc, thread, time::{Duration, Instant}};
 
 use crossterm::{cursor::{Hide, Show}, event::{self, Event, KeyCode}, terminal::{self, EnterAlternateScreen, LeaveAlternateScreen}, ExecutableCommand};
 use invaders::{audio::setup_audio, frame::{self, Drawable}, player::Player, render::render};
@@ -31,8 +31,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     let mut player = Player::new(); 
+    let mut instant = Instant::now();
 
     'gameloop: loop {
+        let delta = instant.elapsed();
+        instant = Instant::now();
+
         let mut cur_frame = frame::new_frame();
 
         while event::poll(Duration::default())? {
@@ -44,6 +48,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                     KeyCode::Right => {
                         player.move_right();
                     },
+                    KeyCode::Enter | KeyCode::Char(' ') => {
+                        if player.shoot() {
+                            audio.play("pew");
+                        }
+                    }
                     KeyCode::Esc | KeyCode::Char('q') => {
                         audio.play("lose");
                         break 'gameloop;
@@ -53,6 +62,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
 
+        player.update(delta);
+        
         player.draw(&mut cur_frame);
         let _ = render_sender.send(cur_frame);
         thread::sleep(Duration::from_millis(1));

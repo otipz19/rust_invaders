@@ -1,8 +1,11 @@
-use crate::{frame::{Drawable, Frame}, COLS_NUM, ROWS_NUM};
+use std::time::Duration;
+
+use crate::{frame::{Drawable, Frame}, shot::Shot, COLS_NUM, ROWS_NUM};
 
 pub struct Player {
     x: usize,
     y: usize,
+    shots: Vec<Shot>,
 }
 
 impl Player {
@@ -10,6 +13,7 @@ impl Player {
         Self {
             x: COLS_NUM / 2,
             y: ROWS_NUM - 1,
+            shots: Vec::new(),
         }
     }
 
@@ -24,10 +28,30 @@ impl Player {
             self.x += 1;
         }
     }
+
+    pub fn shoot(&mut self) -> bool {
+        if self.shots.len() < 2 {
+            self.shots.push(Shot::new(self.x, self.y - 1));
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn update(&mut self, delta: Duration) {
+        for shot in self.shots.iter_mut() {
+            shot.update(delta);
+        }
+        self.shots.retain(|shot| !shot.is_dead());
+    }
 }
 
 impl Drawable for Player {
     fn draw(&self, frame: &mut Frame) {
         frame[self.x][self.y] = "A";
+
+        for shot in self.shots.iter() {
+            shot.draw(frame);
+        }
     }
 }
